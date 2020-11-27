@@ -23,12 +23,16 @@ import (
 	"github.com/pkg/errors"
 )
 
+// IMPORTANT! As of Kubernetes 1.17, some names may be of other types than DNS
+// Subdomain, for example Roles, ClusterRoles, RoleBinding and ClusterRoleBindings:
+// https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+//
+// Therefore, we'll need to handle that. But the documentation from Kubernetes
+// is sparse on this, so there's a bit of guesswork going on.
+
 // validSubdomainName is a regular expression for resource names.
-//
 // According to the Kubernetes help text, the regular expression it uses is:
-//
 //	[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
-//
 // This follows the above regular expression (but requires a full string match, not partial).
 //
 // The Kubernetes documentation is here, though it is not entirely correct:
