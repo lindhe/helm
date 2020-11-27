@@ -23,7 +23,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// validName is a regular expression for resource names.
+// validSubdomainName is a regular expression for resource names.
 //
 // According to the Kubernetes help text, the regular expression it uses is:
 //
@@ -33,7 +33,7 @@ import (
 //
 // The Kubernetes documentation is here, though it is not entirely correct:
 // https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-var validName = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
+var validSubdomainName = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
 
 var (
 	// errMissingName indicates that a release (name) was not provided.
@@ -42,13 +42,13 @@ var (
 	// errInvalidName indicates that an invalid release name was provided
 	errInvalidName = errors.New(fmt.Sprintf(
 		"invalid release name, must match regex %s and the length must not be longer than 53",
-		validName.String()))
+		validSubdomainName.String()))
 
 	// errInvalidKubernetesName indicates that the name does not meet the Kubernetes
 	// restrictions on metadata names.
 	errInvalidKubernetesName = errors.New(fmt.Sprintf(
 		"invalid metadata name, must match regex %s and the length must not be longer than 253",
-		validName.String()))
+		validSubdomainName.String()))
 )
 
 const (
@@ -77,7 +77,7 @@ func ValidateReleaseName(name string) error {
 		return errMissingName
 
 	}
-	if len(name) > maxReleaseNameLen || !validName.MatchString(name) {
+	if len(name) > maxReleaseNameLen || !validSubdomainName.MatchString(name) {
 		return errInvalidName
 	}
 	return nil
@@ -97,7 +97,7 @@ func ValidateReleaseName(name string) error {
 // The Kubernetes documentation is here, though it is not entirely correct:
 // https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
 func ValidateMetadataName(name string) error {
-	if name == "" || len(name) > maxMetadataNameLen || !validName.MatchString(name) {
+	if name == "" || len(name) > maxMetadataNameLen || !validSubdomainName.MatchString(name) {
 		return errInvalidKubernetesName
 	}
 	return nil
