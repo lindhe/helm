@@ -48,9 +48,9 @@ var (
 		"invalid release name, must match regex %s and the length must not be longer than 53",
 		validSubdomainName.String()))
 
-	// errInvalidKubernetesName indicates that the name does not meet the Kubernetes
-	// restrictions on metadata names.
-	errInvalidKubernetesName = errors.New(fmt.Sprintf(
+	// errInvalidK8sSubdomainName indicates that the name does not meet the Kubernetes
+	// restrictions on metadata names for DNS Subdomain Names.
+	errInvalidK8sSubdomainName = errors.New(fmt.Sprintf(
 		"invalid metadata name, must match regex %s and the length must not be longer than 253",
 		validSubdomainName.String()))
 )
@@ -102,7 +102,7 @@ func ValidateReleaseName(name string) error {
 // https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
 func ValidateMetadataName(name string) error {
 	if name == "" || len(name) > maxMetadataNameLen || !validSubdomainName.MatchString(name) {
-		return errInvalidKubernetesName
+		return errInvalidK8sSubdomainName
 	}
 	return nil
 }
