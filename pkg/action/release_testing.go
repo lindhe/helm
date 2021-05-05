@@ -129,31 +129,31 @@ func (r *ReleaseTesting) GetPodLogs(out io.Writer, rel *release.Release) error {
 }
 
 // WritePodLogs will get the logs for all test pods in the given release.
-func (r *ReleaseTesting) WritePodLogs(out io.Writer, rel *release.Release) error {
+func (r *ReleaseTesting) WritePodLogs(rel *release.Release) ([]string, error) {
+	var podLogs []string
 	client, err := r.cfg.KubernetesClientSet()
 	if err != nil {
-		return errors.Wrap(err, "unable to get kubernetes client to fetch pod logs")
+		return nil, errors.Wrap(err, "unable to get kubernetes client to fetch pod logs")
 	}
-
 	for _, h := range rel.Hooks {
 		for _, e := range h.Events {
 			if e == release.HookTest {
 				req := client.CoreV1().Pods(r.Namespace).GetLogs(h.Name, &v1.PodLogOptions{})
 				logReader, err := req.Stream(context.Background())
 				if err != nil {
-					return errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
+					return nil, errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
 				}
 
 				fmt.Fprintf(out, "POD LOGS: %s\n", h.Name)
 				_, err = io.Copy(out, logReader)
 				fmt.Fprintln(out)
 				if err != nil {
-					return errors.Wrapf(err, "unable to write pod logs for %s", h.Name)
+					return nil, errors.Wrapf(err, "unable to write pod logs for %s", h.Name)
 				}
 			}
 		}
 	}
-	return nil
+	return podLogs, nil
 }
 
 func contains(arr []string, value string) bool {
