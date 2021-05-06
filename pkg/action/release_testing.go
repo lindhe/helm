@@ -40,15 +40,6 @@ type ReleaseTesting struct {
 	Filters   map[string][]string
 }
 
-// A PodLog maps a pod name to its log output.
-// TODO: consider adding a timestamp and namespace too, to make it unique.
-type PodLog struct {
-	Name string
-	Log  string
-}
-
-type PodLogs []*PodLog
-
 // NewReleaseTesting creates a new ReleaseTesting object with the given configuration.
 func NewReleaseTesting(cfg *Configuration) *ReleaseTesting {
 	return &ReleaseTesting{
@@ -135,32 +126,6 @@ func (r *ReleaseTesting) GetPodLogs(out io.Writer, rel *release.Release) error {
 		}
 	}
 	return nil
-}
-
-// WritePodLogs will get the logs for all test pods in the given release.
-func (r *ReleaseTesting) WritePodLogs(rel *release.Release) (PodLogs, error) {
-	var podLogs PodLogs
-	client, err := r.cfg.KubernetesClientSet()
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get kubernetes client to fetch pod logs")
-	}
-	for _, h := range rel.Hooks {
-		for _, e := range h.Events {
-			if e == release.HookTest {
-				req := client.CoreV1().Pods(r.Namespace).GetLogs(h.Name, &v1.PodLogOptions{})
-				logReader, err := req.Stream(context.Background())
-				if err != nil {
-					return nil, errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
-				}
-				logBytes, err := io.ReadAll(logReader)
-				if err != nil {
-					return nil, errors.Wrapf(err, "unable to read pod logs for %s", h.Name)
-				}
-				podLogs = append(podLogs, &PodLog{Name: h.Name, Log: string(logBytes)})
-			}
-		}
-	}
-	return podLogs, nil
 }
 
 func contains(arr []string, value string) bool {
