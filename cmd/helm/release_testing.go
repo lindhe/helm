@@ -79,7 +79,6 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 					return err
 				}
 			}
-
 			fmt.Println(podLogs[0].Log)
 
 			if err := outfmt.Write(out, &statusPrinter{rel, settings.Debug, false}); err != nil {
