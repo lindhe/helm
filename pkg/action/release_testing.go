@@ -40,6 +40,15 @@ type ReleaseTesting struct {
 	Filters   map[string][]string
 }
 
+// A PodLog maps a pod name to its log output.
+// TODO: consider adding a timestamp and namespace too, to make it unique.
+type PodLog struct {
+	Name string
+	Log  string
+}
+
+type PodLogs []*PodLog
+
 // NewReleaseTesting creates a new ReleaseTesting object with the given configuration.
 func NewReleaseTesting(cfg *Configuration) *ReleaseTesting {
 	return &ReleaseTesting{
@@ -129,8 +138,8 @@ func (r *ReleaseTesting) GetPodLogs(out io.Writer, rel *release.Release) error {
 }
 
 // WritePodLogs will get the logs for all test pods in the given release.
-func (r *ReleaseTesting) WritePodLogs(rel *release.Release) ([]string, error) {
-	var podLogs []string
+func (r *ReleaseTesting) WritePodLogs(rel *release.Release) (PodLogs, error) {
+	var podLogs PodLogs
 	client, err := r.cfg.KubernetesClientSet()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get kubernetes client to fetch pod logs")
@@ -143,13 +152,11 @@ func (r *ReleaseTesting) WritePodLogs(rel *release.Release) ([]string, error) {
 				if err != nil {
 					return nil, errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
 				}
-
-				fmt.Fprintf(out, "POD LOGS: %s\n", h.Name)
-				_, err = io.Copy(out, logReader)
-				fmt.Fprintln(out)
+				logBytes, err := io.ReadAll(logReader)
 				if err != nil {
-					return nil, errors.Wrapf(err, "unable to write pod logs for %s", h.Name)
+					return nil, errors.Wrapf(err, "unable to read pod logs for %s", h.Name)
 				}
+				podLogs = append(podLogs, &PodLog{Name: h.Name, Log: string(logBytes)})
 			}
 		}
 	}
