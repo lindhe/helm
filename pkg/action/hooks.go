@@ -17,10 +17,13 @@ package action
 
 import (
 	"bytes"
+	"context"
+	"io"
 	"sort"
 	"time"
 
 	"github.com/pkg/errors"
+	v1 "k8s.io/api/core/v1"
 
 	"helm.sh/helm/v3/pkg/release"
 	helmtime "helm.sh/helm/v3/pkg/time"
@@ -83,6 +86,23 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 		err = cfg.KubeClient.WatchUntilReady(resources, timeout)
 		// Note the time of success/failure
 		h.LastRun.CompletedAt = helmtime.Now()
+		if isTestHook(h) {
+			client, err := cfg.KubernetesClientSet()
+			if err != nil {
+				return errors.Wrapf(err, "unable to create client set")
+			}
+			req := client.CoreV1().Pods(rl.Namespace).GetLogs(h.Name, &v1.PodLogOptions{})
+			logReader, err := req.Stream(context.Background())
+			if err != nil {
+				return errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
+			}
+
+			logBytes, err := io.ReadAll(logReader)
+			if err != nil {
+				return errors.Wrapf(err, "unable to read pod logs for %s", h.Name)
+			}
+			h.LastRun.Log = release.HookLog(logBytes)
+		}
 		// Mark hook as succeeded or failed
 		if err != nil {
 			h.LastRun.Phase = release.HookPhaseFailed
@@ -105,6 +125,15 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 	}
 
 	return nil
+}
+
+func isTestHook(h *release.Hook) bool {
+	for _, e := range h.Events {
+		if e == release.HookTest {
+			return true
+		}
+	}
+	return false
 }
 
 // hookByWeight is a sorter for hooks
