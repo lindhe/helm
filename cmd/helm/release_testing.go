@@ -79,7 +79,7 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 			// The logs are always included in the JSON/JAML formats,
 			// and to preserve backwards compatability we print it
 			// for Table mode iff outputLogs is set.
-			// TODO: This should be reflected in the help text and documentation
+			// TODO: This should be reflected in the documentation
 			if outputLogs && outfmt == output.Table {
 				// Print a newline to stdout to separate the output
 				fmt.Fprintln(out)
@@ -94,7 +94,7 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 
 	f := cmd.Flags()
 	f.DurationVar(&client.Timeout, "timeout", 300*time.Second, "time to wait for any individual Kubernetes operation (like Jobs for hooks)")
-	f.BoolVar(&outputLogs, "logs", false, "dump the logs from test pods (this runs after all tests are complete, but before any cleanup)")
+	f.BoolVar(&outputLogs, "logs", false, "dump the logs from test pods even for -o Table output (this runs after all tests are complete, but before any cleanup)")
 	f.StringSliceVar(&filter, "filter", []string{}, "specify tests by attribute (currently \"name\") using attribute=value syntax or '!attribute=value' to exclude a test (can specify multiple or separate values with commas: name=test1,name=test2)")
 	bindOutputFlag(cmd, &outfmt)
 
