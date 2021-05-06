@@ -78,6 +78,9 @@ type Hook struct {
 	DeletePolicies []HookDeletePolicy `json:"delete_policies,omitempty"`
 }
 
+// A HookLog represents a log associated with a hook.
+type HookLog string
+
 // A HookExecution records the result for the last execution of a hook for a given release.
 type HookExecution struct {
 	// StartedAt indicates the date/time this hook was started
@@ -86,6 +89,8 @@ type HookExecution struct {
 	CompletedAt time.Time `json:"completed_at,omitempty"`
 	// Phase indicates whether the hook completed successfully
 	Phase HookPhase `json:"phase"`
+	// Log holds the log associated with the hook.
+	Log HookLog `json:"log,omitempty"`
 }
 
 // A HookPhase indicates the state of a hook execution
