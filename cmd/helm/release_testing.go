@@ -72,17 +72,20 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 				return runErr
 			}
 
-			var podLogs action.PodLogs
-			if outputLogs {
-				var err error
-				if podLogs, err = client.WritePodLogs(rel); err != nil {
-					return err
-				}
-			}
-			fmt.Println(podLogs[0].Log)
-
 			if err := outfmt.Write(out, &statusPrinter{rel, settings.Debug, false}); err != nil {
 				return err
+			}
+
+			// The logs are always included in the JSON/JAML formats,
+			// and to preserve backwards compatability we print it
+			// for Table mode iff outputLogs is set.
+			// TODO: This should be reflected in the help text and documentation
+			if outputLogs && outfmt == output.Table {
+				// Print a newline to stdout to separate the output
+				fmt.Fprintln(out)
+				if err := client.GetPodLogs(out, rel); err != nil {
+					return err
+				}
 			}
 
 			return runErr
