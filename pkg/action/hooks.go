@@ -86,23 +86,25 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 		err = cfg.KubeClient.WatchUntilReady(resources, timeout)
 		// Note the time of success/failure
 		h.LastRun.CompletedAt = helmtime.Now()
+
+		// For test hooks, we want to collect the associated pod logs
 		if isTestHook(h) {
 			client, err := cfg.KubernetesClientSet()
 			if err != nil {
-				return errors.Wrapf(err, "unable to create client set")
+				return errors.Wrapf(err, "unable to create Kubernetes client set")
 			}
 			req := client.CoreV1().Pods(rl.Namespace).GetLogs(h.Name, &v1.PodLogOptions{})
 			logReader, err := req.Stream(context.Background())
 			if err != nil {
 				return errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
 			}
-
 			logBytes, err := io.ReadAll(logReader)
 			if err != nil {
 				return errors.Wrapf(err, "unable to read pod logs for %s", h.Name)
 			}
 			h.LastRun.Log = release.HookLog(logBytes)
 		}
+
 		// Mark hook as succeeded or failed
 		if err != nil {
 			h.LastRun.Phase = release.HookPhaseFailed
