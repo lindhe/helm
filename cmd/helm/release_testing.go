@@ -72,16 +72,18 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 				return runErr
 			}
 
-			if err := outfmt.Write(out, &statusPrinter{rel, settings.Debug, false}); err != nil {
-				return err
-			}
-
+			var podLogs action.PodLogs
 			if outputLogs {
-				// Print a newline to stdout to separate the output
-				fmt.Fprintln(out)
-				if err := client.GetPodLogs(out, rel); err != nil {
+				var err error
+				if podLogs, err = client.WritePodLogs(rel); err != nil {
 					return err
 				}
+			}
+
+			fmt.Println(podLogs[0].Log)
+
+			if err := outfmt.Write(out, &statusPrinter{rel, settings.Debug, false}); err != nil {
+				return err
 			}
 
 			return runErr
