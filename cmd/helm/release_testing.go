@@ -80,7 +80,7 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 			// With table output, we print logs if and only if explicitly requested,
 			// to preserve backwards compatibility.
 			// TODO: This should be reflected in the documentation
-			if outputLogs && outfmt == output.Table {
+			if outfmt == output.Table && outputLogs {
 				// Print a newline to stdout to separate the output
 				fmt.Fprintln(out)
 				if err := client.GetPodLogs(out, rel); err != nil {
