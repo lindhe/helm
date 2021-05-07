@@ -97,7 +97,8 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 			if err != nil {
 				return errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
 			}
-			h.LastRun.Log = release.HookLog(responseBody)
+			hookLog := release.HookLog(responseBody)
+			h.LastRun.Log = &hookLog
 		}
 
 		// Mark hook as succeeded or failed

@@ -103,7 +103,8 @@ func (r *ReleaseTesting) WritePodLogs(out io.Writer, rel *release.Release) error
 	for _, h := range rel.Hooks {
 		if isTestHook(h) {
 			fmt.Fprintf(out, "POD LOGS: %s\n", h.Name)
-			_, err := fmt.Fprintf(out, string(h.LastRun.Log))
+			// TODO: What if the log is nil?
+			_, err := fmt.Fprintf(out, string(*h.LastRun.Log))
 			fmt.Fprintln(out)
 			if err != nil {
 				return errors.Wrapf(err, "unable to write pod logs for %s", h.Name)
