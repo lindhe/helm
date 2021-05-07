@@ -86,7 +86,7 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 		// Note the time of success/failure
 		h.LastRun.CompletedAt = helmtime.Now()
 
-		// For test hooks, we want to collect the associated pod logs
+		// Collect pod logs associated with test hooks
 		if isTestHook(h) {
 			client, err := cfg.KubernetesClientSet()
 			if err != nil {
