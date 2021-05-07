@@ -17,13 +17,11 @@ limitations under the License.
 package action
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"time"
 
 	"github.com/pkg/errors"
-	v1 "k8s.io/api/core/v1"
 
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
@@ -98,30 +96,17 @@ func (r *ReleaseTesting) Run(name string) (*release.Release, error) {
 	return rel, r.cfg.Releases.Update(rel)
 }
 
-// GetPodLogs will write the logs for all test pods in the given release into
+// WritePodLogs will write the logs for all test pods in the given release into
 // the given writer. These can be immediately output to the user or captured for
 // other uses
-func (r *ReleaseTesting) GetPodLogs(out io.Writer, rel *release.Release) error {
-	client, err := r.cfg.KubernetesClientSet()
-	if err != nil {
-		return errors.Wrap(err, "unable to get kubernetes client to fetch pod logs")
-	}
-
+func (r *ReleaseTesting) WritePodLogs(out io.Writer, rel *release.Release) error {
 	for _, h := range rel.Hooks {
-		for _, e := range h.Events {
-			if e == release.HookTest {
-				req := client.CoreV1().Pods(r.Namespace).GetLogs(h.Name, &v1.PodLogOptions{})
-				logReader, err := req.Stream(context.Background())
-				if err != nil {
-					return errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
-				}
-
-				fmt.Fprintf(out, "POD LOGS: %s\n", h.Name)
-				_, err = io.Copy(out, logReader)
-				fmt.Fprintln(out)
-				if err != nil {
-					return errors.Wrapf(err, "unable to write pod logs for %s", h.Name)
-				}
+		if isTestHook(h) {
+			fmt.Fprintf(out, "POD LOGS: %s\n", h.Name)
+			_, err := fmt.Fprintf(out, string(h.LastRun.Log))
+			fmt.Fprintln(out)
+			if err != nil {
+				return errors.Wrapf(err, "unable to write pod logs for %s", h.Name)
 			}
 		}
 	}
