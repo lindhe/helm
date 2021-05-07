@@ -18,7 +18,6 @@ package action
 import (
 	"bytes"
 	"context"
-	"io"
 	"sort"
 	"time"
 
@@ -94,15 +93,11 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 				return errors.Wrapf(err, "unable to create Kubernetes client set")
 			}
 			req := client.CoreV1().Pods(rl.Namespace).GetLogs(h.Name, &v1.PodLogOptions{})
-			logReader, err := req.Stream(context.Background())
+			responseBody, err := req.DoRaw(context.Background())
 			if err != nil {
 				return errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
 			}
-			logBytes, err := io.ReadAll(logReader)
-			if err != nil {
-				return errors.Wrapf(err, "unable to read pod logs for %s", h.Name)
-			}
-			h.LastRun.Log = release.HookLog(logBytes)
+			h.LastRun.Log = release.HookLog(responseBody)
 		}
 
 		// Mark hook as succeeded or failed
