@@ -112,16 +112,16 @@ func (r *ReleaseTesting) GetPodLogs(out io.Writer, rel *release.Release) error {
 			}
 		}
 	}
-	return r.WritePodLogs(out, rel)
+	return r.WriteSavedPodLogs(out, rel)
 }
 
-// WritePodLogs will write the logs for all test pods in the given release into
-// the given writer. These can be immediately output to the user or captured for
-// other uses.
-// In contrast to GetPodLogs, WritePodLogs will not fetch logs from pods;
+// WriteSavedPodLogs will write the logs for all test pods in the given release
+// into the given writer. These can be immediately output to the user or
+// captured for other uses.
+// In contrast to GetPodLogs, WriteSavedPodLogs will not fetch logs from pods;
 // instead, it expects that the logs have already been fetched and added to the
 // release.
-func (r *ReleaseTesting) WritePodLogs(out io.Writer, rel *release.Release) error {
+func (r *ReleaseTesting) WriteSavedPodLogs(out io.Writer, rel *release.Release) error {
 	for _, h := range rel.Hooks {
 		if isTestHook(h) {
 			fmt.Fprintf(out, "POD LOGS: %s\n", h.Name)

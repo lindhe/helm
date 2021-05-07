@@ -83,7 +83,7 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 			if outfmt == output.Table && outputLogs {
 				// Print a newline to stdout to separate the output
 				fmt.Fprintln(out)
-				if err := client.WritePodLogs(out, rel); err != nil {
+				if err := client.GetPodLogs(out, rel); err != nil {
 					return err
 				}
 			}
