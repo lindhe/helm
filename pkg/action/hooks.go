@@ -23,6 +23,7 @@ import (
 
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"helm.sh/helm/v3/pkg/release"
 	helmtime "helm.sh/helm/v3/pkg/time"
@@ -42,6 +43,11 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 
 	// hooke are pre-ordered by kind, so keep order stable
 	sort.Stable(hookByWeight(executingHooks))
+
+	client, err := cfg.KubernetesClientSet()
+	if err != nil {
+		return errors.Wrapf(err, "unable to create Kubernetes client set to fetch pod logs")
+	}
 
 	for _, h := range executingHooks {
 		// Set default delete policy to before-hook-creation
@@ -88,17 +94,7 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 
 		// Collect pod logs associated with test hooks
 		if isTestHook(h) {
-			client, err := cfg.KubernetesClientSet()
-			if err != nil {
-				return errors.Wrapf(err, "unable to create Kubernetes client set")
-			}
-			req := client.CoreV1().Pods(rl.Namespace).GetLogs(h.Name, &v1.PodLogOptions{})
-			responseBody, err := req.DoRaw(context.Background())
-			if err != nil {
-				return errors.Wrapf(err, "unable to get pod logs for %s", h.Name)
-			}
-			hookLog := release.HookLog(responseBody)
-			h.LastRun.Log = &hookLog
+			getAndSaveLog(client, rl, h)
 		}
 
 		// Mark hook as succeeded or failed
@@ -122,6 +118,18 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 		}
 	}
 
+	return nil
+}
+
+// getAndSaveLog gets the log from the pod associated with the given hook, which is expected to be a test hook.
+func getAndSaveLog(client kubernetes.Interface, rel *release.Release, hook *release.Hook) error {
+	req := client.CoreV1().Pods(rel.Namespace).GetLogs(hook.Name, &v1.PodLogOptions{})
+	responseBody, err := req.DoRaw(context.Background())
+	if err != nil {
+		return errors.Wrapf(err, "unable to get pod logs for %s", hook.Name)
+	}
+	hookLog := release.HookLog(responseBody)
+	hook.LastRun.Log = &hookLog
 	return nil
 }
 
