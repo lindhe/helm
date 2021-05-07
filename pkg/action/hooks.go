@@ -124,15 +124,6 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 	return nil
 }
 
-func isTestHook(h *release.Hook) bool {
-	for _, e := range h.Events {
-		if e == release.HookTest {
-			return true
-		}
-	}
-	return false
-}
-
 // hookByWeight is a sorter for hooks
 type hookByWeight []*release.Hook
 
@@ -170,6 +161,16 @@ func (cfg *Configuration) deleteHookByPolicy(h *release.Hook, policy release.Hoo
 func hookHasDeletePolicy(h *release.Hook, policy release.HookDeletePolicy) bool {
 	for _, v := range h.DeletePolicies {
 		if policy == v {
+			return true
+		}
+	}
+	return false
+}
+
+// isTestHook determines whether a hook is a test hook.
+func isTestHook(h *release.Hook) bool {
+	for _, e := range h.Events {
+		if e == release.HookTest {
 			return true
 		}
 	}
