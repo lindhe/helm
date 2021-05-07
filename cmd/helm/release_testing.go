@@ -76,7 +76,7 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 				return err
 			}
 
-			// The logs are always included in the JSON/JAML formats,
+			// The logs are always included in the JSON/YAML formats,
 			// and to preserve backwards compatability we print it
 			// for Table mode iff outputLogs is set.
 			// TODO: This should be reflected in the documentation
