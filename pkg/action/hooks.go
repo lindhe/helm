@@ -92,7 +92,6 @@ func (cfg *Configuration) execHook(rl *release.Release, hook release.HookEvent, 
 		// Note the time of success/failure
 		h.LastRun.CompletedAt = helmtime.Now()
 
-		// Collect pod logs associated with test hooks
 		if isTestHook(h) {
 			getAndSaveLog(client, rl, h)
 		}
