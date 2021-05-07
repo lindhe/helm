@@ -79,7 +79,6 @@ func newReleaseTestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 			// The logs are always included when JSON or YAML output is used.
 			// With table output, we print logs if and only if explicitly requested,
 			// to preserve backwards compatibility.
-			// TODO: This should be reflected in the documentation
 			if outfmt == output.Table && outputLogs {
 				// Print a newline to stdout to separate the output
 				fmt.Fprintln(out)
