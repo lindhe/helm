@@ -92,7 +92,7 @@ type HookExecution struct {
 	// Log holds the log associated with the hook.
 	// The empty string represents the output from a pod that didn't print anything.
 	// The nil pointer represents the absence of a log (for example if the pod couldn't be created).
-	Log *HookLog `json:"log,omitempty"` // We need to distinguish the empty log from no log; otherwise they would be rendered identically in JSON/YAML.
+	Log *HookLog `json:"log,omitempty"` // We need to distinguish the empty log from no log; otherwise both would be rendered identically in JSON/YAML.
 }
 
 // A HookPhase indicates the state of a hook execution
