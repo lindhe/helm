@@ -125,7 +125,9 @@ func (r *ReleaseTesting) WriteSavedPodLogs(out io.Writer, rel *release.Release) 
 	for _, h := range rel.Hooks {
 		if isTestHook(h) {
 			fmt.Fprintf(out, "POD LOGS: %s\n", h.Name)
-			// TODO: What if the log is nil?
+			if h.LastRun.Log == nil {
+				return errors.Errorf("unable to write saved pod logs for %s because it has none", h.Name)
+			}
 			_, err := fmt.Fprintf(out, string(*h.LastRun.Log))
 			fmt.Fprintln(out)
 			if err != nil {
