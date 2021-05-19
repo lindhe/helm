@@ -5,7 +5,6 @@ go 1.16
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/Masterminds/squirrel v1.5.0
@@ -36,10 +35,10 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
-	golang.org/x/term v0.0.0-20201117132131-f5c789dd3221
-	k8s.io/api v0.20.4
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+	k8s.io/api v0.21.1
 	k8s.io/apiextensions-apiserver v0.20.4
-	k8s.io/apimachinery v0.20.4
+	k8s.io/apimachinery v0.21.1
 	k8s.io/apiserver v0.20.4
 	k8s.io/cli-runtime v0.20.4
 	k8s.io/client-go v0.20.4
